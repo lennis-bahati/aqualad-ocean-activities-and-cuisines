@@ -1,4 +1,5 @@
 🌊 Aqualad - Ocean Activities & Cuisines
+[![Live Demo](https://img.shields.io/badge/Demo-Live_App-00f2fe?style=for-the-badge&logo=googlechrome&logoColor=black)](https://deft-mousse-dab616.netlify.app)
 
 Aqualad is a modern, responsive web application designed for booking unique ocean adventures and gourmet seafood culinary experiences[cite: 1]. Built with a sleek "glassmorphism" aesthetic, it delivers a seamless e-commerce and booking flow right in the browser.
 
