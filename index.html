@@ -1,0 +1,670 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Aqualad - Ocean Activities & Cuisines</title>
+    <!-- Tailwind CSS -->
+    <script src="https://cdn.tailwindcss.com"></script>
+    <!-- Google Fonts & Ionicons -->
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+    <script type="module" src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.esm.js"></script>
+    <script nomodule src="https://unpkg.com/ionicons@7.1.0/dist/ionicons/ionicons.js"></script>
+    
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['Poppins', 'sans-serif'],
+            },
+            colors: {
+              aqua: {
+                DEFAULT: '#00f2fe',
+                dark: '#4facfe',
+                deep: '#03254c',
+                glass: 'rgba(0, 242, 254, 0.15)',
+              }
+            }
+          }
+        }
+      }
+    </script>
+
+    <style>
+      body {
+        font-family: 'Poppins', sans-serif;
+        background: linear-gradient(135deg, #021B29 0%, #064E5B 50%, #002B49 100%);
+        background-attachment: fixed;
+        color: #ffffff;
+        min-height: 100vh;
+      }
+      .glass-card {
+        background: rgba(15, 32, 67, 0.55);
+        backdrop-filter: blur(16px);
+        -webkit-backdrop-filter: blur(16px);
+        border: 1px solid rgba(255, 255, 255, 0.18);
+        box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+      }
+      .glass-welcome {
+        background: rgba(0, 242, 254, 0.12);
+        backdrop-filter: blur(14px);
+        -webkit-backdrop-filter: blur(14px);
+        border: 1px solid rgba(0, 242, 254, 0.3);
+      }
+      .glass-header {
+        background: rgba(2, 27, 41, 0.85);
+        backdrop-filter: blur(12px);
+        -webkit-backdrop-filter: blur(12px);
+        border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+      }
+      .hover-glow:hover {
+        box-shadow: 0 0 25px rgba(0, 242, 254, 0.5);
+      }
+      /* Custom Scrollbar */
+      ::-webkit-scrollbar {
+        width: 8px;
+      }
+      ::-webkit-scrollbar-track {
+        background: #021B29;
+      }
+      ::-webkit-scrollbar-thumb {
+        background: #00f2fe;
+        border-radius: 4px;
+      }
+    </style>
+  </head>
+  <body class="flex flex-col min-h-screen relative overflow-x-hidden">
+
+    <!-- Toast Notification Container -->
+    <div id="toast-container" class="fixed bottom-5 right-5 z-50 flex flex-col gap-2 pointer-events-none"></div>
+
+    <!-- Navigation Header -->
+    <header class="glass-header fixed top-0 left-0 w-full z-40 px-4 md:px-12 py-4 transition-all duration-300">
+      <div class="max-w-7xl mx-auto flex justify-between items-center">
+        <!-- Logo -->
+        <a href="#" onclick="switchTab('home')" class="flex items-center gap-2 group">
+          <ion-icon name="water-outline" class="text-3xl text-cyan-400 group-hover:scale-110 transition-transform"></ion-icon>
+          <h1 class="text-2xl md:text-3xl font-bold tracking-wider text-transparent bg-clip-text bg-gradient-to-r from-cyan-400 to-blue-300">
+            Aqualad
+          </h1>
+        </a>
+
+        <!-- Navigation Links -->
+        <nav class="hidden md:flex items-center space-x-8">
+          <button onclick="switchTab('home')" class="nav-btn text-cyan-300 font-medium hover:text-white transition-colors relative after:content-[''] after:absolute after:-bottom-1 after:left-0 after:w-full after:h-0.5 after:bg-cyan-400 after:scale-x-0 hover:after:scale-x-100 after:transition-transform">Home</button>
+          <button onclick="scrollToPackages()" class="text-gray-300 font-medium hover:text-white transition-colors">Packages</button>
+          <button onclick="openModal('about-modal')" class="text-gray-300 font-medium hover:text-white transition-colors">About</button>
+          <button onclick="openModal('contact-modal')" class="text-gray-300 font-medium hover:text-white transition-colors">Contact</button>
+        </nav>
+
+        <!-- Header Actions -->
+        <div class="flex items-center space-x-4">
+          <button onclick="openModal('login-modal')" class="hidden sm:inline-block px-5 py-2 border-2 border-cyan-400 text-cyan-400 rounded-xl font-semibold hover:bg-cyan-400 hover:text-slate-900 transition-all duration-300">
+            Login
+          </button>
+
+          <!-- Cart Icon Badge -->
+          <button onclick="switchTab('cart')" class="relative p-2.5 rounded-xl bg-slate-800/60 border border-slate-700/80 hover:bg-slate-700/60 text-cyan-400 hover:text-white transition-all">
+            <ion-icon name="cart-outline" class="text-2xl block pointer-events-none"></ion-icon>
+            <span id="cart-count-badge" class="absolute -top-1.5 -right-1.5 bg-cyan-400 text-slate-900 text-xs font-bold w-5 h-5 flex items-center justify-center rounded-full shadow-lg scale-0 transition-transform duration-300">
+              0
+            </span>
+          </button>
+        </div>
+      </div>
+    </header>
+
+    <!-- Main Content Dynamic View Container -->
+    <main class="flex-grow pt-28 pb-16 px-4 md:px-8 max-w-7xl mx-auto w-full">
+      
+      <!-- HOME VIEW -->
+      <div id="view-home" class="space-y-14 transition-opacity duration-300">
+        <!-- Welcome Hero Banner -->
+        <section class="glass-welcome rounded-3xl p-6 md:p-12 text-center max-w-4xl mx-auto shadow-2xl relative overflow-hidden">
+          <div class="absolute -right-10 -bottom-10 w-48 h-48 bg-cyan-500/10 rounded-full blur-3xl pointer-events-none"></div>
+          <h2 class="text-3xl md:text-5xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-cyan-300 via-white to-blue-300 mb-4">
+            Welcome to Aqualad
+          </h2>
+          <p class="text-lg md:text-xl text-cyan-100 font-light mb-4">
+            Experience the seas like never before with Aqualad.
+          </p>
+          <p class="text-sm md:text-base text-gray-300 max-w-2xl mx-auto leading-relaxed mb-4">
+            Get to try out a combination of different ocean activities from all over the world and experience gourmet seafood cuisines curated by oceanic culinary experts.
+          </p>
+          <div class="inline-block px-4 py-1.5 bg-cyan-500/20 border border-cyan-400/30 rounded-full text-cyan-200 text-xs md:text-sm font-medium">
+            🌊 Choose from our 3 signature packages below!
+          </div>
+          <p class="text-xs md:text-sm text-gray-400 italic mt-4">
+            So grab your swimsuits and join us in the ocean — for we are your "aqua lad" (no pun intended!).
+          </p>
+        </section>
+
+        <!-- Package Section -->
+        <section id="packages-section" class="scroll-mt-32 space-y-8">
+          <div class="text-center">
+            <h3 class="text-2xl md:text-4xl font-bold text-white mb-2">Ocean Adventure Packages</h3>
+            <p class="text-gray-400 text-sm md:text-base">Select your dream marine journey and book your spot today.</p>
+          </div>
+
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <!-- Package 1 Card -->
+            <div class="glass-card rounded-2xl overflow-hidden flex flex-col justify-between hover-glow transition-all duration-300 transform hover:-translate-y-2 group">
+              <div>
+                <div class="relative h-48 overflow-hidden bg-slate-800">
+                  <svg class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="400" height="200" fill="#032B45"/>
+                    <path d="M0 120 Q100 80 200 120 T400 120 V200 H0 Z" fill="#054A6F" opacity="0.7"/>
+                    <path d="M0 150 Q100 120 200 150 T400 150 V200 H0 Z" fill="#00f2fe" opacity="0.3"/>
+                    <circle cx="120" cy="70" r="15" fill="#00f2fe" opacity="0.4"/>
+                    <circle cx="280" cy="110" r="8" fill="#00f2fe" opacity="0.3"/>
+                    <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" fill="#00f2fe" font-size="28" font-weight="bold">DEEP SEA</text>
+                  </svg>
+                  <span class="absolute top-3 right-3 bg-cyan-400/90 text-slate-950 font-bold px-3 py-1 rounded-full text-xs shadow-md">
+                    $150 / person
+                  </span>
+                </div>
+                <div class="p-6 space-y-3">
+                  <h4 class="text-xl font-bold text-cyan-300">Deep Sea Experience</h4>
+                  <p class="text-gray-300 text-sm leading-relaxed">
+                    Experience a full deep diving expedition into rich reef eco-systems guided by master divers, including gourmet grilled seafood lunch.
+                  </p>
+                </div>
+              </div>
+              <div class="p-6 pt-0 flex gap-3">
+                <button onclick="openExploreModal('deep-sea')" class="flex-1 py-2.5 border border-cyan-400 text-cyan-300 rounded-xl font-medium text-sm hover:bg-cyan-400/10 transition-colors">
+                  Explore
+                </button>
+                <button onclick="addToCart('deep-sea')" class="flex-1 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 rounded-xl font-semibold text-sm hover:brightness-110 shadow-lg transition-all flex items-center justify-center gap-1.5">
+                  <ion-icon name="cart-outline" class="text-lg"></ion-icon>
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+
+            <!-- Package 2 Card -->
+            <div class="glass-card rounded-2xl overflow-hidden flex flex-col justify-between hover-glow transition-all duration-300 transform hover:-translate-y-2 group">
+              <div>
+                <div class="relative h-48 overflow-hidden bg-slate-800">
+                  <svg class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="400" height="200" fill="#0A3E59"/>
+                    <path d="M0 140 Q100 110 200 140 T400 140 V200 H0 Z" fill="#0D6B8C" opacity="0.8"/>
+                    <circle cx="330" cy="50" r="25" fill="#FFE898" opacity="0.8"/>
+                    <text x="50%" y="45%" dominant-baseline="middle" text-anchor="middle" fill="#00f2fe" font-size="28" font-weight="bold">SEA SIDE</text>
+                  </svg>
+                  <span class="absolute top-3 right-3 bg-cyan-400/90 text-slate-950 font-bold px-3 py-1 rounded-full text-xs shadow-md">
+                    $90 / person
+                  </span>
+                </div>
+                <div class="p-6 space-y-3">
+                  <h4 class="text-xl font-bold text-cyan-300">Sea Side Chill</h4>
+                  <p class="text-gray-300 text-sm leading-relaxed">
+                    If you aren't ready to plunge into the vast deep ocean, enjoy shallow snorkeling, jet-skiing, coastal dining, and beach lounges.
+                  </p>
+                </div>
+              </div>
+              <div class="p-6 pt-0 flex gap-3">
+                <button onclick="openExploreModal('sea-side')" class="flex-1 py-2.5 border border-cyan-400 text-cyan-300 rounded-xl font-medium text-sm hover:bg-cyan-400/10 transition-colors">
+                  Explore
+                </button>
+                <button onclick="addToCart('sea-side')" class="flex-1 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 rounded-xl font-semibold text-sm hover:brightness-110 shadow-lg transition-all flex items-center justify-center gap-1.5">
+                  <ion-icon name="cart-outline" class="text-lg"></ion-icon>
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+
+            <!-- Package 3 Card -->
+            <div class="glass-card rounded-2xl overflow-hidden flex flex-col justify-between hover-glow transition-all duration-300 transform hover:-translate-y-2 group">
+              <div>
+                <div class="relative h-48 overflow-hidden bg-slate-800">
+                  <svg class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500" viewBox="0 0 400 200" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="400" height="200" fill="#022137"/>
+                    <path d="M0 100 Q150 160 400 100 V200 H0 Z" fill="#06567C" opacity="0.9"/>
+                    <polygon points="200,30 220,90 180,90" fill="#00f2fe" opacity="0.6"/>
+                    <text x="50%" y="55%" dominant-baseline="middle" text-anchor="middle" fill="#00f2fe" font-size="28" font-weight="bold">AQUA MAN</text>
+                  </svg>
+                  <span class="absolute top-3 right-3 bg-amber-400 text-slate-950 font-bold px-3 py-1 rounded-full text-xs shadow-md">
+                    $220 / person
+                  </span>
+                </div>
+                <div class="p-6 space-y-3">
+                  <h4 class="text-xl font-bold text-cyan-300">Aqua Man Ultimate</h4>
+                  <p class="text-gray-300 text-sm leading-relaxed">
+                    Can't decide? Get the all-inclusive experience covering deep diving, luxury speedboats, helicopter ocean views, and 5-star seafood tasting.
+                  </p>
+                </div>
+              </div>
+              <div class="p-6 pt-0 flex gap-3">
+                <button onclick="openExploreModal('aqua-man')" class="flex-1 py-2.5 border border-cyan-400 text-cyan-300 rounded-xl font-medium text-sm hover:bg-cyan-400/10 transition-colors">
+                  Explore
+                </button>
+                <button onclick="addToCart('aqua-man')" class="flex-1 py-2.5 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 rounded-xl font-semibold text-sm hover:brightness-110 shadow-lg transition-all flex items-center justify-center gap-1.5">
+                  <ion-icon name="cart-outline" class="text-lg"></ion-icon>
+                  Add to Cart
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <!-- CART VIEW -->
+      <div id="view-cart" class="hidden space-y-8 transition-opacity duration-300">
+        <div class="flex items-center justify-between border-b border-cyan-500/20 pb-4">
+          <div>
+            <h2 class="text-2xl md:text-3xl font-bold text-white">Your Activity Cart</h2>
+            <p class="text-sm text-gray-400">Review selected package experiences before confirming your booking.</p>
+          </div>
+          <button onclick="switchTab('home')" class="text-cyan-400 hover:text-white flex items-center gap-1 text-sm font-medium">
+            <ion-icon name="arrow-back-outline"></ion-icon> Back to Packages
+          </button>
+        </div>
+
+        <div class="grid grid-cols-1 lg:grid-cols-3 gap-8">
+          <!-- Cart Items Container -->
+          <div id="cart-items-container" class="lg:col-span-2 space-y-4">
+            <!-- Dynamically populated by renderCart() -->
+          </div>
+
+          <!-- Order Summary Card -->
+          <div class="glass-card rounded-2xl p-6 h-fit space-y-6">
+            <h3 class="text-xl font-bold text-cyan-300 border-b border-gray-700 pb-3">Booking Summary</h3>
+            
+            <div class="space-y-3 text-sm">
+              <div class="flex justify-between text-gray-300">
+                <span>Subtotal</span>
+                <span id="summary-subtotal" class="font-semibold text-white">$0.00</span>
+              </div>
+              <div class="flex justify-between text-gray-300">
+                <span>Ocean Conservation Fee (5%)</span>
+                <span id="summary-tax" class="font-semibold text-white">$0.00</span>
+              </div>
+              <div class="flex justify-between text-gray-300">
+                <span>Booking Fee</span>
+                <span class="font-semibold text-white">$10.00</span>
+              </div>
+              <div class="border-t border-gray-700 pt-3 flex justify-between text-base font-bold text-white">
+                <span>Total Amount</span>
+                <span id="summary-total" class="text-cyan-300 text-xl">$0.00</span>
+              </div>
+            </div>
+
+            <div class="space-y-3 pt-2">
+              <button onclick="checkout()" id="checkout-btn" class="w-full py-3 bg-gradient-to-r from-cyan-400 to-blue-500 text-slate-950 font-bold rounded-xl hover:brightness-110 transition-all shadow-lg flex items-center justify-center gap-2">
+                <ion-icon name="shield-checkmark-outline" class="text-xl"></ion-icon>
+                Proceed to Checkout
+              </button>
+              <button onclick="clearCart()" class="w-full py-2.5 border border-red-500/40 text-red-400 hover:bg-red-500/10 font-medium rounded-xl text-sm transition-colors">
+                Clear Cart
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </main>
+
+    <!-- Footer -->
+    <footer class="mt-auto border-t border-slate-800 bg-slate-950/80 py-8 text-center text-gray-400 text-sm">
+      <div class="max-w-7xl mx-auto px-4 flex flex-col md:flex-row justify-between items-center gap-4">
+        <div>
+          <p class="font-semibold text-gray-300">Aqualad Oceans Ltd.</p>
+          <address class="not-italic text-xs text-gray-500 mt-1">104 Ocean Drive, Marine Bay Harbor, CA 90210</address>
+        </div>
+        <p class="text-xs text-gray-500">&copy; 2026 Aqualad. All rights reserved. Built for ocean lovers.</p>
+      </div>
+    </footer>
+
+    <!-- Modals -->
+    <!-- Package Details Modal -->
+    <div id="explore-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="glass-card rounded-2xl max-w-lg w-full p-6 space-y-4 relative animate-fade-in">
+        <button onclick="closeModal('explore-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">
+          <ion-icon name="close-circle-outline"></ion-icon>
+        </button>
+        <h3 id="modal-title" class="text-2xl font-bold text-cyan-300"></h3>
+        <div id="modal-content" class="text-sm text-gray-300 space-y-3 leading-relaxed"></div>
+        <div class="pt-4 flex justify-end">
+          <button id="modal-add-btn" class="px-6 py-2.5 bg-cyan-400 text-slate-950 font-bold rounded-xl hover:bg-cyan-300 transition-colors">
+            Add Package
+          </button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Login Modal -->
+    <div id="login-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="glass-card rounded-2xl max-w-md w-full p-6 space-y-6 relative">
+        <button onclick="closeModal('login-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">
+          <ion-icon name="close-circle-outline"></ion-icon>
+        </button>
+        <div class="text-center">
+          <h3 class="text-2xl font-bold text-white">Welcome Back</h3>
+          <p class="text-xs text-gray-400 mt-1">Access your Aqualad ocean bookings</p>
+        </div>
+        <form onsubmit="handleLogin(event)" class="space-y-4">
+          <div>
+            <label class="block text-xs text-gray-300 mb-1">Email Address</label>
+            <input type="email" required placeholder="diver@aqualad.com" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400">
+          </div>
+          <div>
+            <label class="block text-xs text-gray-300 mb-1">Password</label>
+            <input type="password" required placeholder="••••••••" class="w-full bg-slate-900/80 border border-slate-700 rounded-xl px-4 py-2.5 text-sm text-white focus:outline-none focus:border-cyan-400">
+          </div>
+          <button type="submit" class="w-full py-3 bg-cyan-400 text-slate-950 font-bold rounded-xl hover:bg-cyan-300 transition-colors">
+            Login
+          </button>
+        </form>
+      </div>
+    </div>
+
+    <!-- About Modal -->
+    <div id="about-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="glass-card rounded-2xl max-w-lg w-full p-6 space-y-4 relative">
+        <button onclick="closeModal('about-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">
+          <ion-icon name="close-circle-outline"></ion-icon>
+        </button>
+        <h3 class="text-2xl font-bold text-cyan-300">About Aqualad</h3>
+        <p class="text-sm text-gray-300 leading-relaxed">
+          Founded by ocean lovers and certified scuba masters, Aqualad combines high-adrenaline ocean excursions with premium seafood cuisine experiences across global coastal destinations.
+        </p>
+      </div>
+    </div>
+
+    <!-- Contact Modal -->
+    <div id="contact-modal" class="fixed inset-0 bg-black/70 backdrop-blur-sm z-50 flex items-center justify-center p-4 hidden">
+      <div class="glass-card rounded-2xl max-w-lg w-full p-6 space-y-4 relative">
+        <button onclick="closeModal('contact-modal')" class="absolute top-4 right-4 text-gray-400 hover:text-white text-2xl">
+          <ion-icon name="close-circle-outline"></ion-icon>
+        </button>
+        <h3 class="text-2xl font-bold text-cyan-300">Get in Touch</h3>
+        <p class="text-sm text-gray-300">Have questions about booking custom group trips or dietary requirements?</p>
+        <p class="text-sm text-cyan-200">📧 support@aqualad.com | 📞 +1 (800) 555-AQUA</p>
+      </div>
+    </div>
+
+    <!-- Application JavaScript Logic -->
+    <script>
+      // Package Definitions
+      const PACKAGES = {
+        'deep-sea': {
+          id: 'deep-sea',
+          name: 'Deep Sea Experience',
+          price: 150,
+          desc: 'Experience a full deep diving experience where all the rich marine life lives.',
+          details: 'Includes deep-sea diving gear rental, master dive instructor, safety boat accompaniment, underwater photo package, and a 3-course grilled seafood lunch on board.'
+        },
+        'sea-side': {
+          id: 'sea-side',
+          name: 'Sea Side Chill',
+          price: 90,
+          desc: 'Enjoy shallow water coastal activities and relaxing seafood dining.',
+          details: 'Perfect for families and casual adventurers! Includes paddleboarding, guided shore snorkeling, jet-ski pass (30 mins), and beachside seafood platter.'
+        },
+        'aqua-man': {
+          id: 'aqua-man',
+          name: 'Aqua Man Ultimate',
+          price: 220,
+          desc: 'Get to experience both land and deep seas like the real Aquaman.',
+          details: 'The full luxury package! Deep sea diving + coastal speedboats + private island seafood buffet + helicopter scenic flight around the reef bay.'
+        }
+      };
+
+      // State
+      let cart = [];
+
+      // Load persistent state from LocalStorage
+      function loadCart() {
+        try {
+          const stored = localStorage.getItem('aqualad_cart');
+          if (stored) {
+            cart = JSON.parse(stored);
+          }
+        } catch(e) {
+          console.warn('LocalStorage unavailable, running with in-memory state.');
+        }
+        updateBadge();
+      }
+
+      function saveCart() {
+        try {
+          localStorage.setItem('aqualad_cart', JSON.stringify(cart));
+        } catch(e) {}
+        updateBadge();
+        if (!document.getElementById('view-cart').classList.contains('hidden')) {
+          renderCart();
+        }
+      }
+
+      // Add to Cart Logic
+      function addToCart(packageId) {
+        const itemConfig = PACKAGES[packageId];
+        if (!itemConfig) return;
+
+        const existing = cart.find(item => item.id === packageId);
+        if (existing) {
+          existing.quantity += 1;
+        } else {
+          cart.push({
+            id: itemConfig.id,
+            name: itemConfig.name,
+            price: itemConfig.price,
+            quantity: 1
+          });
+        }
+        saveCart();
+        showToast(`Added ${itemConfig.name} to cart!`);
+      }
+
+      // Cart Quantity Controls
+      function updateQuantity(packageId, delta) {
+        const item = cart.find(i => i.id === packageId);
+        if (!item) return;
+
+        item.quantity += delta;
+        if (item.quantity <= 0) {
+          cart = cart.filter(i => i.id !== packageId);
+        }
+        saveCart();
+      }
+
+      function removeFromCart(packageId) {
+        cart = cart.filter(i => i.id !== packageId);
+        saveCart();
+        showToast('Item removed from cart', 'info');
+      }
+
+      function clearCart() {
+        if (cart.length === 0) return;
+        cart = [];
+        saveCart();
+        showToast('Cart cleared', 'info');
+      }
+
+      // Render Cart Items UI
+      function renderCart() {
+        const container = document.getElementById('cart-items-container');
+        const subtotalEl = document.getElementById('summary-subtotal');
+        const taxEl = document.getElementById('summary-tax');
+        const totalEl = document.getElementById('summary-total');
+        const checkoutBtn = document.getElementById('checkout-btn');
+
+        if (cart.length === 0) {
+          container.innerHTML = `
+            <div class="glass-card rounded-2xl p-12 text-center space-y-4">
+              <ion-icon name="cart-outline" class="text-6xl text-gray-500"></ion-icon>
+              <h3 class="text-xl font-bold text-gray-300">Your cart is currently empty</h3>
+              <p class="text-gray-400 text-sm">Explore our ocean packages and add your next adventure!</p>
+              <button onclick="switchTab('home')" class="px-6 py-2.5 bg-cyan-400 text-slate-950 font-bold rounded-xl hover:bg-cyan-300 transition-colors inline-block mt-2">
+                Browse Packages
+              </button>
+            </div>
+          `;
+          subtotalEl.textContent = '$0.00';
+          taxEl.textContent = '$0.00';
+          totalEl.textContent = '$0.00';
+          checkoutBtn.disabled = true;
+          checkoutBtn.classList.add('opacity-50', 'cursor-not-allowed');
+          return;
+        }
+
+        checkoutBtn.disabled = false;
+        checkoutBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+
+        let subtotal = 0;
+        container.innerHTML = cart.map(item => {
+          const itemTotal = item.price * item.quantity;
+          subtotal += itemTotal;
+          return `
+            <div class="glass-card rounded-2xl p-4 md:p-6 flex flex-col md:flex-row items-center justify-between gap-4">
+              <div class="flex items-center gap-4 w-full md:w-auto">
+                <div class="w-14 h-14 bg-cyan-500/20 border border-cyan-400/30 rounded-xl flex items-center justify-center text-cyan-300 flex-shrink-0">
+                  <ion-icon name="water-outline" class="text-2xl"></ion-icon>
+                </div>
+                <div>
+                  <h4 class="font-bold text-white text-base">${item.name}</h4>
+                  <p class="text-xs text-cyan-300">$${item.price} / person</p>
+                </div>
+              </div>
+
+              <div class="flex items-center justify-between w-full md:w-auto gap-6">
+                <!-- Quantity Controls -->
+                <div class="flex items-center gap-2 bg-slate-900/60 border border-slate-700 px-3 py-1.5 rounded-xl">
+                  <button onclick="updateQuantity('${item.id}', -1)" class="text-gray-400 hover:text-cyan-400 font-bold px-1 text-base">-</button>
+                  <span class="text-sm font-semibold text-white px-2">${item.quantity}</span>
+                  <button onclick="updateQuantity('${item.id}', 1)" class="text-gray-400 hover:text-cyan-400 font-bold px-1 text-base">+</button>
+                </div>
+
+                <div class="text-right">
+                  <span class="block font-bold text-cyan-300 text-lg">$${itemTotal}</span>
+                </div>
+
+                <button onclick="removeFromCart('${item.id}')" class="text-red-400 hover:text-red-300 p-2 text-xl">
+                  <ion-icon name="trash-outline"></ion-icon>
+                </button>
+              </div>
+            </div>
+          `;
+        }).join('');
+
+        const tax = subtotal * 0.05;
+        const total = subtotal + tax + (subtotal > 0 ? 10 : 0);
+
+        subtotalEl.textContent = `$${subtotal.toFixed(2)}`;
+        taxEl.textContent = `$${tax.toFixed(2)}`;
+        totalEl.textContent = `$${total.toFixed(2)}`;
+      }
+
+      // Update Navigation Counter Badge
+      function updateBadge() {
+        const totalCount = cart.reduce((sum, item) => sum + item.quantity, 0);
+        const badge = document.getElementById('cart-count-badge');
+        if (!badge) return;
+
+        badge.textContent = totalCount;
+        if (totalCount > 0) {
+          badge.classList.remove('scale-0');
+          badge.classList.add('scale-100');
+        } else {
+          badge.classList.remove('scale-100');
+          badge.classList.add('scale-0');
+        }
+      }
+
+      // Tab Switcher
+      function switchTab(tabName) {
+        const homeView = document.getElementById('view-home');
+        const cartView = document.getElementById('view-cart');
+
+        if (tabName === 'cart') {
+          homeView.classList.add('hidden');
+          cartView.classList.remove('hidden');
+          renderCart();
+          window.scrollTo({ top: 0, behavior: 'smooth' });
+        } else {
+          cartView.classList.add('hidden');
+          homeView.classList.remove('hidden');
+        }
+      }
+
+      function scrollToPackages() {
+        switchTab('home');
+        setTimeout(() => {
+          document.getElementById('packages-section').scrollIntoView({ behavior: 'smooth' });
+        }, 50);
+      }
+
+      // Modal Handlers
+      function openExploreModal(packageId) {
+        const pkg = PACKAGES[packageId];
+        if (!pkg) return;
+
+        document.getElementById('modal-title').textContent = pkg.name;
+        document.getElementById('modal-content').innerHTML = `
+          <p><strong>Overview:</strong> ${pkg.desc}</p>
+          <p><strong>Includes:</strong> ${pkg.details}</p>
+          <p class="text-cyan-300 font-bold text-base mt-2">Price: $${pkg.price} per guest</p>
+        `;
+        
+        const addBtn = document.getElementById('modal-add-btn');
+        addBtn.onclick = () => {
+          addToCart(packageId);
+          closeModal('explore-modal');
+        };
+
+        openModal('explore-modal');
+      }
+
+      function openModal(id) {
+        document.getElementById(id).classList.remove('hidden');
+      }
+
+      function closeModal(id) {
+        document.getElementById(id).classList.add('hidden');
+      }
+
+      function handleLogin(e) {
+        e.preventDefault();
+        closeModal('login-modal');
+        showToast('Logged in successfully!');
+      }
+
+      function checkout() {
+        if (cart.length === 0) return;
+        showToast('Order placed successfully! Welcome aboard Aqualad.');
+        cart = [];
+        saveCart();
+      }
+
+      // Toast System
+      function showToast(message, type = 'success') {
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = `px-4 py-3 rounded-xl text-sm font-semibold text-white shadow-2xl flex items-center gap-2 transition-all transform translate-y-4 opacity-0 pointer-events-auto ${
+          type === 'info' ? 'bg-slate-800 border border-cyan-400/40' : 'bg-gradient-to-r from-cyan-500 to-blue-600'
+        }`;
+        toast.innerHTML = `
+          <ion-icon name="${type === 'info' ? 'information-circle-outline' : 'checkmark-circle-outline'}" class="text-xl"></ion-icon>
+          <span>${message}</span>
+        `;
+
+        container.appendChild(toast);
+        
+        requestAnimationFrame(() => {
+          toast.classList.remove('translate-y-4', 'opacity-0');
+        });
+
+        setTimeout(() => {
+          toast.classList.add('opacity-0', 'translate-y-2');
+          setTimeout(() => toast.remove(), 300);
+        }, 3000);
+      }
+
+      // Initialize
+      window.onload = function() {
+        loadCart();
+      };
+    </script>
+  </body>
+</html>
